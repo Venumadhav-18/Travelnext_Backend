@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 
 // Create the context
 const TravelContext = createContext();
@@ -31,8 +32,35 @@ export const TravelProvider = ({ children }) => {
   }, [user]);
 
   // Add new booking (internal)
-  const addBooking = (newBooking) => {
+  const addBooking = async (newBooking) => {
     setBookings((prev) => [...prev, newBooking]);
+
+    // Send the booking to the MySQL Database via Spring Boot
+    const item = newBooking.item || {};
+    const payment = newBooking.payment || {};
+    const u = newBooking.user || {};
+    const price = item.finalPrice || item.price || item.rate || 0;
+
+    const backendPayload = {
+        itemName: item.name || item.title || "Booking item",
+        city: item.city || "",
+        itemType: item.type || "homestay",
+        checkIn: item.checkIn || "",
+        checkOut: item.checkOut || "",
+        nights: item.nights || 1,
+        totalPrice: price,
+        paymentMethod: payment.method || "",
+        paymentSummary: payment.summary ? JSON.stringify(payment.summary) : "",
+        userName: u.name || "",
+        userEmail: u.email || "",
+        createdAt: newBooking.createdAt
+    };
+
+    try {
+        await axios.post("http://localhost:8081/api/travel/bookings", backendPayload);
+    } catch (err) {
+        console.error("Warning: Could not save booking to database", err);
+    }
   };
 
   const clearBookings = () => {
