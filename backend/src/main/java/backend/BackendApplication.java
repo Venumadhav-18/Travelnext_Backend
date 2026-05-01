@@ -1,9 +1,9 @@
 package backend;
 
 import backend.model.Booking;
-import backend.model.Place;
+import backend.model.Homestay;
 import backend.repository.BookingRepository;
-import backend.repository.PlaceRepository;
+import backend.repository.HomestayRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,31 +17,17 @@ public class BackendApplication {
     }
 
     @Bean
-    CommandLineRunner initDatabase(PlaceRepository placeRepository, BookingRepository bookingRepository) {
+    CommandLineRunner initDatabase(HomestayRepository homestayRepository, BookingRepository bookingRepository) {
         return args -> {
-            if (placeRepository.count() == 0) {
-                placeRepository.save(new Place("Goa"));
-                placeRepository.save(new Place("Manali"));
-                placeRepository.save(new Place("Kerala"));
-                placeRepository.save(new Place("Kashmir"));
+            if (homestayRepository.count() == 0) {
+                homestayRepository.save(new Homestay("Goa Homestay", "Beautiful beach homestay", "Goa", 150.0, 4, "WiFi, Pool", "goa.jpg"));
+                homestayRepository.save(new Homestay("Manali Retreat", "Mountain view homestay", "Manali", 200.0, 6, "Fireplace, Hiking", "manali.jpg"));
+                homestayRepository.save(new Homestay("Kerala Backwater", "Traditional Kerala homestay", "Kerala", 180.0, 5, "Boat, Ayurveda", "kerala.jpg"));
+                homestayRepository.save(new Homestay("Kashmir Houseboat", "Lake view houseboat", "Kashmir", 250.0, 8, "Lake access, Fishing", "kashmir.jpg"));
             }
 
-            if (bookingRepository.count() == 0) {
-                bookingRepository.save(new Booking(
-                        "Lakeview Homestay",
-                        "Goa",
-                        "homestay",
-                        "2026-04-15",
-                        "2026-04-18",
-                        3,
-                        7500.0,
-                        "free",
-                        null,
-                        "Demo User",
-                        "demo@example.com",
-                        "2026-04-07T10:00:00"
-                ));
-            }
+            // Sample booking if needed
+            // bookingRepository.save(new Booking(...));
         };
     }
 }

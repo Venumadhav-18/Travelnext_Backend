@@ -20,16 +20,8 @@ export const TravelProvider = ({ children }) => {
     localStorage.setItem("bookings", JSON.stringify(bookings));
   }, [bookings]);
 
-  // Basic user (auth) state persisted to localStorage for demo purposes
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("travel_user");
-    return saved ? JSON.parse(saved) : null;
-  });
-
-  useEffect(() => {
-    if (user) localStorage.setItem("travel_user", JSON.stringify(user));
-    else localStorage.removeItem("travel_user");
-  }, [user]);
+  // Auth state with JWT and role
+  const [user, setUser] = useState(null);
 
   // Add new booking (internal)
   const addBooking = async (newBooking) => {
@@ -42,8 +34,6 @@ export const TravelProvider = ({ children }) => {
     const price = item.finalPrice || item.price || item.rate || 0;
 
     const backendPayload = {
-        itemName: item.name || item.title || "Booking item",
-        city: item.city || "",
         itemType: item.type || "homestay",
         checkIn: item.checkIn || "",
         checkOut: item.checkOut || "",
@@ -51,13 +41,12 @@ export const TravelProvider = ({ children }) => {
         totalPrice: price,
         paymentMethod: payment.method || "",
         paymentSummary: payment.summary ? JSON.stringify(payment.summary) : "",
-        userName: u.name || "",
-        userEmail: u.email || "",
         createdAt: newBooking.createdAt
     };
 
     try {
-        await axios.post("http://localhost:8081/api/travel/bookings", backendPayload);
+        const response = await axios.post("http://localhost:8081/api/travel/bookings", backendPayload);
+        console.log("Booking saved to database", response.data);
     } catch (err) {
         console.error("Warning: Could not save booking to database", err);
     }
@@ -67,18 +56,29 @@ export const TravelProvider = ({ children }) => {
     setBookings([]);
   };
 
-  // Auth helpers (very lightweight, client-only for demo)
-  const login = ({ email, password }) => {
-    // In a real app you'd authenticate; here we just set user if values present
-    if (!email || !password) return { ok: false, message: "Provide email and password" };
-    const u = { name: email.split("@")[0], email };
-    setUser(u);
-    return { ok: true, user: u };
-  };
+  // Auth helpers with dummy auth
+  const validAccounts = [
+    { username: "admin", password: "admin", role: "ADMIN" },
+    { username: "user", password: "user", role: "USER" },
+    { username: "guide", password: "guide", role: "GUIDE" },
+  ];
 
-  const register = ({ name, email, password }) => {
-    if (!email || !password || !name) return { ok: false, message: "Provide name, email and password" };
-    const u = { name, email };
+  const login = async ({ username, password, role }) => {
+    const normalizedUsername = username?.trim().toLowerCase();
+    const account = validAccounts.find((acc) =>
+      acc.username === normalizedUsername &&
+      acc.password === password &&
+      (role ? acc.role === role : true)
+    );
+
+    if (!account) {
+      return {
+        ok: false,
+        message: "Invalid login. Try user/user, guide/guide, or admin/admin.",
+      };
+    }
+
+    const u = { username: account.username, role: account.role };
     setUser(u);
     return { ok: true, user: u };
   };
@@ -91,7 +91,7 @@ export const TravelProvider = ({ children }) => {
       id: Date.now(),
       item,
       payment: { method: payment.method, summary: payment.summary || null },
-      user: user ? { name: user.name, email: user.email } : null,
+      user: user ? { name: user.username, email: user.username } : null,
       createdAt: new Date().toISOString(),
     };
     addBooking(booking);
@@ -105,7 +105,6 @@ export const TravelProvider = ({ children }) => {
       clearBookings,
       user,
       login,
-      register,
       logout,
       confirmBooking,
     }}>

@@ -25,11 +25,22 @@ export default function Navbar() {
             <NavLink to="/homestays" className={({isActive}) => isActive ? 'active' : ''}>Homestays</NavLink>
             <NavLink to="/guide" className={({isActive}) => isActive ? 'active' : ''}>Local Guide</NavLink>
             <NavLink to="/contact" className={({isActive}) => isActive ? 'active' : ''}>Contact</NavLink>
-            <NavLink to="/bookings" className={({isActive}) => isActive ? 'active' : ''}>My Bookings</NavLink>
+            {user && <NavLink to="/bookings" className={({isActive}) => isActive ? 'active' : ''}>My Bookings</NavLink>}
+
+            {user?.role === 'ADMIN' && (
+              <>
+                <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Admin Dashboard</NavLink>
+              </>
+            )}
+            {user?.role === 'GUIDE' && (
+              <>
+                <NavLink to="/guide-dashboard" className={({isActive}) => isActive ? 'active' : ''}>Guide Dashboard</NavLink>
+              </>
+            )}
 
             {user ? (
               <>
-                <span style={{ color: 'white', marginLeft: 10 }}>Hi, {user.name}</span>
+                <span style={{ color: 'white', marginLeft: 10 }}>Hi, {user.username} ({user.role})</span>
                 <button className="btn" onClick={logout} style={{ marginLeft: 8 }}>Logout</button>
               </>
             ) : (

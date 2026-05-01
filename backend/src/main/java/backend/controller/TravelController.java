@@ -1,6 +1,7 @@
 package backend.controller;
 
-import backend.repository.PlaceRepository;
+import backend.model.Homestay;
+import backend.repository.HomestayRepository;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -9,16 +10,30 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class TravelController {
 
-    private final PlaceRepository placeRepository;
+    private final HomestayRepository homestayRepository;
 
-    public TravelController(PlaceRepository placeRepository) {
-        this.placeRepository = placeRepository;
+    public TravelController(HomestayRepository homestayRepository) {
+        this.homestayRepository = homestayRepository;
     }
 
-    @GetMapping("/places")
-    public List<String> getPlaces() {
-        return placeRepository.findAll().stream()
-                .map(place -> place.getName())
-                .toList();
+    @GetMapping("/homestays")
+    public List<Homestay> getHomestays() {
+        return homestayRepository.findAll();
+    }
+
+    @PostMapping("/homestays")
+    public Homestay createHomestay(@RequestBody Homestay homestay) {
+        return homestayRepository.save(homestay);
+    }
+
+    @PutMapping("/homestays/{id}")
+    public Homestay updateHomestay(@PathVariable Long id, @RequestBody Homestay homestay) {
+        homestay.setId(id);
+        return homestayRepository.save(homestay);
+    }
+
+    @DeleteMapping("/homestays/{id}")
+    public void deleteHomestay(@PathVariable Long id) {
+        homestayRepository.deleteById(id);
     }
 }
